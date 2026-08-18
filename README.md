@@ -1,5 +1,7 @@
 # Native GLM-5.3 workers for Codex
 
+[![verify](https://github.com/suphotP/codex-native-glm-worker/actions/workflows/ci.yml/badge.svg)](https://github.com/suphotP/codex-native-glm-worker/actions/workflows/ci.yml)
+
 Run **GLM-5.3 as a real native Codex sub-agent**—created by Codex `spawn_agent`, visible in the Agents panel, and controlled through native message/wait/interrupt tools.
 
 This is not `codex exec`, not a second CLI hidden in a shell, not an external controller, and not a custom agent orchestrator. Codex remains the parent runtime. A small loopback bridge translates the API protocol only.
