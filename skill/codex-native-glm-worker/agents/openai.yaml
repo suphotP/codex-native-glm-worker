@@ -1,0 +1,4 @@
+interface:
+  display_name: "Native GLM Worker"
+  short_description: "Install and verify native GLM Codex workers"
+  default_prompt: "Use $codex-native-glm-worker to install or verify a native GLM-5.3 Codex subagent."
