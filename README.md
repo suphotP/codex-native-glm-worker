@@ -6,6 +6,18 @@ Run **GLM-5.3 as a real native Codex sub-agent**—created by Codex `spawn_agent
 
 This is not `codex exec`, not a second CLI hidden in a shell, not an external controller, and not a custom agent orchestrator. Codex remains the parent runtime. A small loopback bridge translates the API protocol only.
 
+## GLM is optional—not a replacement
+
+This kit adds one extra native agent type named `glm_worker`. It does **not** change the root model, default sub-agent, existing agent roles, or their providers. All native Codex agents you already use remain available exactly as before.
+
+- Omit `agent_type="glm_worker"` and Codex uses its normal/default agent behavior.
+- Select any existing native role and that role keeps its existing model/provider.
+- Select `agent_type="glm_worker"` only for a task you intentionally want to send to GLM-5.3.
+- Mix OpenAI-backed and GLM-backed children in the same root task when the work divides honestly.
+- Uninstalling this kit removes only its marked `glm_worker`/`zai_glm_native` configuration and managed files.
+
+The intended pattern is **Codex root + whichever native sub-agents fit the task + optional GLM workers for bounded bulk work**. It is not an all-or-nothing provider switch.
+
 > Status: early public integration kit. macOS is the most exercised path; Linux is supported by scripts and needs broader machine coverage. Windows setup is currently manual. Use a separate test Codex home first.
 
 ## Why this is worth doing
@@ -105,6 +117,8 @@ The installer:
 - appends one marked TOML block only after strict TOML validation;
 - installs the optional skill and filesystem assignment-envelope directory;
 - never asks for or writes your Z.AI key.
+
+It does not edit any root/default model selection or any unrelated agent/provider table.
 
 Read [Installation](docs/INSTALLATION.md) before configuring secrets or a background service.
 

@@ -56,6 +56,9 @@ describe("native GLM integration static contracts", () => {
     expect(readme).toContain("visible in the Agents panel");
     expect(readme).toContain("fork_turns=\"none\"");
     expect(readme).toContain("OpenAI Responses endpoint");
+    expect(readme).toContain("GLM is optional—not a replacement");
+    expect(readme).toContain("does **not** change the root model");
+    expect(readme).toContain("Mix OpenAI-backed and GLM-backed children");
     expect(readme).not.toContain("unlimited GLM");
   });
 

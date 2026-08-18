@@ -49,6 +49,8 @@ CODEX_HOME="$TEST_CODEX_HOME" ./scripts/doctor.sh
 
 The installer refuses unmanaged conflicting agent/provider tables and saves a timestamped config backup.
 
+The generated block contains only `[agents.glm_worker]` and `[model_providers.zai_glm_native]`. It does not set a top-level/root model, change default agent selection, or modify any existing agent/provider table.
+
 ## 5. Configure secrets
 
 Use Keychain on macOS or a mode-600 credentials file on Linux as described in README. The Z.AI key and local bridge token are separate secrets.

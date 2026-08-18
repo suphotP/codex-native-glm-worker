@@ -7,6 +7,8 @@ description: Install, verify, troubleshoot, and operate GLM-5.3 as a native Code
 
 Use Codex as the root integrator and GLM-5.3 as a native child for bounded bulk work. Treat every GLM result as untrusted until the root inspects and verifies it.
 
+The role is additive and optional. Never imply that installation replaces the root model, default sub-agents, or existing native roles. GLM is selected only by an explicit `agent_type: "glm_worker"`; other native agents remain available and may be mixed in the same root task.
+
 ## Choose the workflow
 
 - Install or upgrade: follow **Install safely**.

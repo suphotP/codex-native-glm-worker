@@ -14,6 +14,8 @@ Codex root thread (OpenAI model)
 
 Codex owns the agent. The bridge does not create a second Codex process, call `codex exec`, schedule tasks, read repositories, or collect agent results.
 
+`glm_worker` is an additive role. Registration does not replace the root model, change default delegation, or rewrite another native agent role. Provider selection happens per child: only a native spawn that explicitly selects `agent_type="glm_worker"` uses this GLM provider. OpenAI-backed and GLM-backed native children can coexist under the same root.
+
 ## Why there are two local services
 
 LiteLLM already handles the complex Responses-to-Chat-Completions translation, including tool-call compatibility. The small Bun facade adds operational rails that are easier to audit independently:
