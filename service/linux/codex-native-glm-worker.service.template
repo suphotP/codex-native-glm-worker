@@ -1,0 +1,21 @@
+# managed-by: codex-native-glm-worker v1
+[Unit]
+Description=Codex native GLM worker bridge
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=__INSTALL_ROOT__/bin/run
+Restart=on-failure
+RestartSec=10
+Environment=NATIVE_GLM_CREDENTIALS_FILE=%h/.config/codex-native-glm-worker/credentials.env
+Environment=GLM_RESPONSES_BRIDGE_PORT=47821
+Environment=NATIVE_GLM_LITELLM_PORT=47825
+Environment=NATIVE_GLM_BUN_BIN=__BUN_BIN__
+Environment=NATIVE_GLM_LITELLM_BIN=__LITELLM_BIN__
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=default.target

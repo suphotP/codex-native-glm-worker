@@ -1,0 +1,37 @@
+model_list:
+  - model_name: glm-5.3
+    litellm_params:
+      model: custom_openai/glm-5.3
+      api_base: https://api.z.ai/api/coding/paas/v4
+      api_key: os.environ/ZAI_API_KEY
+      extra_body:
+        thinking:
+          type: enabled
+        reasoning_effort: max
+      additional_drop_params:
+        - client_metadata
+      drop_params: true
+      timeout: 1800
+      max_retries: 0
+    model_info:
+      mode: chat
+      max_input_tokens: 1000000
+      max_output_tokens: 128000
+      supports_function_calling: true
+      supports_parallel_function_calling: true
+
+router_settings:
+  num_retries: 0
+  timeout: 1800
+
+litellm_settings:
+  telemetry: false
+  set_verbose: false
+  drop_params: true
+  num_retries: 0
+  request_timeout: 1800
+  turn_off_message_logging: true
+  disable_streaming_logging: true
+
+general_settings:
+  disable_spend_logs: true

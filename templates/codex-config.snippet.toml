@@ -1,0 +1,20 @@
+# Render __CODEX_HOME__, __INSTALL_ROOT__, __BRIDGE_PORT__, and __AUTH_COMMAND__ before use.
+[agents.glm_worker]
+description = "GLM-5.3 native Codex worker for non-UI implementation, debugging, tests, infrastructure, and independent review."
+config_file = "__CODEX_HOME__/agents/glm_worker.toml"
+
+[model_providers.zai_glm_native]
+name = "Z.AI GLM native bridge"
+base_url = "http://127.0.0.1:__BRIDGE_PORT__/v1"
+wire_api = "responses"
+request_max_retries = 0
+stream_max_retries = 0
+stream_idle_timeout_ms = 1800000
+requires_openai_auth = false
+
+[model_providers.zai_glm_native.auth]
+command = "__AUTH_COMMAND__"
+args = []
+timeout_ms = 5000
+refresh_interval_ms = 300000
+cwd = "__INSTALL_ROOT__"

@@ -1,0 +1,26 @@
+name: verify
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.3"
+      - name: Shell syntax
+        run: sh -n scripts/*.sh tests/*.sh
+      - name: Credential-free bridge and static tests
+        run: bun run check:bridge && bun run check:static
+      - name: Temporary-home installer tests
+        run: bun run check:installer && bun run check:service
+      - name: Skill validation
+        run: python3 scripts/validate-skill.py

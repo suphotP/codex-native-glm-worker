@@ -1,0 +1,17 @@
+{
+  "name": "codex-native-glm-worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "bun run check:bridge && bun run check:static && bun run check:installer && bun run check:service",
+    "check:bridge": "bun scripts/self-test.mjs",
+    "check:installer": "sh tests/install.test.sh",
+    "check:service": "sh tests/service-template.test.sh",
+    "check:static": "bun test tests/static.test.mjs",
+    "doctor": "sh scripts/doctor.sh"
+  },
+  "engines": {
+    "bun": ">=1.2.0"
+  }
+}

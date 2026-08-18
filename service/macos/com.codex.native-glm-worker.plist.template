@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- managed-by: codex-native-glm-worker v1 -->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.codex.native-glm-worker</string>
+  <key>ProgramArguments</key>
+  <array><string>__INSTALL_ROOT__/bin/run</string></array>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>ThrottleInterval</key><integer>10</integer>
+  <key>ProcessType</key><string>Background</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>NATIVE_GLM_BUN_BIN</key><string>__BUN_BIN__</string>
+    <key>NATIVE_GLM_LITELLM_BIN</key><string>__LITELLM_BIN__</string>
+  </dict>
+  <key>StandardOutPath</key><string>__CODEX_HOME__/logs/native-glm-worker.stdout.log</string>
+  <key>StandardErrorPath</key><string>__CODEX_HOME__/logs/native-glm-worker.stderr.log</string>
+</dict>
+</plist>
