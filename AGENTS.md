@@ -1,6 +1,7 @@
 # Contributor agent rules
 
 - Preserve native Codex semantics: the only accepted child path is native `spawn_agent(agent_type="glm_worker")`.
+- Stock Codex 0.155.0-alpha.16 does not apply this child provider override. Keep the source patch pinned to `zai_glm_native`, preserve parent OpenAI authority, and require a matching built backend before claiming readiness.
 - Do not add `codex exec`, shell pseudo-agents, external controllers, hosted proxy behavior, or silent model fallback.
 - Keep `glm-5.3`, reasoning effort `max`, and the 1,000,000-token context explicit and test-covered.
 - Keep both bridge processes loopback-only and credential-free in repository tests.

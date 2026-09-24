@@ -74,7 +74,7 @@ cleanup_all() { cleanup_render; cleanup_lock; }
 trap cleanup_all EXIT INT TERM
 bun "$repo_root/scripts/render-templates.mjs" \
   "$repo_root/templates/glm_worker.toml" "$render_root/glm_worker.toml" \
-  "{\"__ASSIGNMENT_ROOT__\":\"$codex_home/glm-native-assignments\"}"
+  "{\"__ASSIGNMENT_ROOT__\":\"$codex_home/glm-native-assignments\",\"__INSTALL_ROOT__\":\"$install_root\"}"
 bun "$repo_root/scripts/render-templates.mjs" \
   "$repo_root/templates/codex-config.snippet.toml" "$render_root/config.snippet.toml" \
   "{\"__CODEX_HOME__\":\"$codex_home\",\"__INSTALL_ROOT__\":\"$install_root\",\"__BRIDGE_PORT__\":\"$responses_port\",\"__AUTH_COMMAND__\":\"$install_root/bin/bridge-auth\"}"
@@ -88,11 +88,15 @@ if [ -f "$codex_home/config.toml" ]; then
 fi
 
 install -m 600 "$repo_root/bridge/responses-bridge.mjs" "$install_root/bridge/responses-bridge.mjs"
+install -m 600 "$repo_root/bridge/tool-loop-guard.mjs" "$install_root/bridge/tool-loop-guard.mjs"
 install -m 600 "$repo_root/bridge/litellm.config.yaml" "$install_root/bridge/litellm.config.yaml"
 install -m 700 "$repo_root/scripts/run.sh" "$install_root/bin/run"
 install -m 700 "$repo_root/scripts/bridge-auth.sh" "$install_root/bin/bridge-auth"
 install -m 700 "$repo_root/scripts/doctor.sh" "$install_root/bin/doctor"
+install -m 700 "$repo_root/scripts/activate-backend.sh" "$install_root/bin/activate-backend"
 install -m 600 "$repo_root/scripts/self-test.mjs" "$install_root/bin/self-test.mjs"
+install -m 600 "$repo_root/scripts/checkpoint.mjs" "$install_root/bin/checkpoint.mjs"
+install -m 600 "$repo_root/templates/TOOL_DISCIPLINE.md" "$install_root/bin/TOOL_DISCIPLINE.md"
 install -m 600 "$render_root/glm_worker.toml" "$codex_home/agents/glm_worker.toml"
 install -m 600 "$render_root/config.snippet.toml" "$install_root/config.snippet.toml"
 if [ -d "$skill_target" ]; then
@@ -105,11 +109,15 @@ cat > "$install_root/install.manifest" <<EOF
 $codex_home/agents/glm_worker.toml
 $codex_home/skills/codex-native-glm-worker
 $install_root/bridge/responses-bridge.mjs
+$install_root/bridge/tool-loop-guard.mjs
 $install_root/bridge/litellm.config.yaml
 $install_root/bin/run
 $install_root/bin/bridge-auth
 $install_root/bin/doctor
+$install_root/bin/activate-backend
 $install_root/bin/self-test.mjs
+$install_root/bin/checkpoint.mjs
+$install_root/bin/TOOL_DISCIPLINE.md
 $install_root/config.snippet.toml
 EOF
 chmod 600 "$install_root/install.manifest"

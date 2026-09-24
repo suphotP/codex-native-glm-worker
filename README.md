@@ -2,13 +2,13 @@
 
 [![verify](https://github.com/suphotP/codex-native-glm-worker/actions/workflows/ci.yml/badge.svg)](https://github.com/suphotP/codex-native-glm-worker/actions/workflows/ci.yml)
 
-Run **GLM-5.3 as a real native Codex sub-agent**—created by Codex `spawn_agent`, visible in the Agents panel, and controlled through native message/wait/interrupt tools.
+Run **GLM-5.3 as a real native Codex sub-agent**—created by Codex `spawn_agent`, visible in the Agents panel, and controlled through native message/wait/interrupt tools. This release targets Codex `0.155.0-alpha.16` and includes the source patch needed to select GLM only for that child role.
 
 This is not `codex exec`, not a second CLI hidden in a shell, not an external controller, and not a custom agent orchestrator. Codex remains the parent runtime. A small loopback bridge translates the API protocol only.
 
 ## GLM is optional—not a replacement
 
-This kit adds one extra native agent type named `glm_worker`. It does **not** change the root model, default sub-agent, existing agent roles, or their providers. All native Codex agents you already use remain available exactly as before.
+This kit adds one extra native agent type named `glm_worker`. It does **not** change the root model, default sub-agent, existing agent roles, or their providers. All native Codex agents you already use remain available exactly as before. The modified Codex executable is built from a pinned upstream source commit; only the child-provider override path receives a code change.
 
 - Omit `agent_type="glm_worker"` and Codex uses its normal/default agent behavior.
 - Select any existing native role and that role keeps its existing model/provider.
@@ -18,7 +18,13 @@ This kit adds one extra native agent type named `glm_worker`. It does **not** ch
 
 The intended pattern is **Codex root + whichever native sub-agents fit the task + optional GLM workers for bounded bulk work**. It is not an all-or-nothing provider switch.
 
-> Status: early public integration kit. macOS is the most exercised path; Linux is supported by scripts and needs broader machine coverage. Windows setup is currently manual. Use a separate test Codex home first.
+> Status: the `0.155.0-alpha.16` backend patch and native GLM child were tested on macOS arm64 with a GPT-6 Sol parent. The repository bridge and installer have credential-free tests. Linux needs a live native machine check; Windows setup is manual. Use a separate test Codex home first.
+
+## Current backend and source
+
+The bundled backend builder pins OpenAI Codex source tag `rust-v0.155.0-alpha.16` at commit `0e2f848bf4a4e8d41a02d848a851ba126c09d185`. The [child-provider patch](patches/codex-0.155.0-alpha.16-subagent-provider.patch) permits exactly the configured `zai_glm_native` provider for a custom child role. It preserves the parent's OpenAI provider and blocks other role-supplied providers. The repository includes the patch and build script; `--apply` also materializes the **full patched source** beside the runnable binary and records checksums. On macOS, the builder uses a signed code-mode host from an installed Codex app only when its bundled CLI reports the exact pinned version; otherwise it attempts to build the host from source. No private credentials or compiled binary are committed.
+
+Stock Codex `0.155.0-alpha.16` does not apply this custom child provider override. Installing only the agent TOML and bridge therefore does not complete the setup. Build the pinned backend, select it with `CODEX_CLI_PATH`, and restart Codex. A later Codex app update needs a new pinned source review, patch and native proof before changing the version in this repository.
 
 ## Why this is worth doing
 
@@ -35,9 +41,9 @@ GLM-5.3 is unusually useful for this worker role:
 
 ### A real workload anecdote—not a guarantee
 
-The setup came from a production-minded repository workflow that previously exhausted the practical weekly allowance of **three separate $200/month Codex accounts**. After routing bounded non-UI worker packets to native GLM-5.3 children, the same operator has been comfortable with **one $200/month Codex account plus GLM capacity**.
+The setup came from a production-minded repository workflow where routing bounded worker packets to native GLM-5.3 children reduced pressure on premium Codex capacity.
 
-That is one workload, not a benchmark or savings promise. Pricing, plan quotas, peak-hour multipliers, model quality, and account eligibility change. Do not buy a plan solely from this anecdote.
+That is one workload, not a benchmark or savings promise. Pricing, plan quotas, peak-hour multipliers, model quality, and account eligibility change. Compare current terms with your own workload before spending money.
 
 ## What “native” means
 
@@ -65,6 +71,9 @@ Codex custom model providers expect a Responses-compatible endpoint. Z.AI's Codi
 - optional bounded pre-body retry;
 - streaming pass-through;
 - redacted errors and no body logging;
+- explicit 429 usage-window and fair-usage handling, plus bounded opt-in 502/503/504 and high-demand retries;
+- fail-closed `UPSTREAM_429_UNINSPECTABLE` when a 429 body is oversized or stalls during a short error-inspection deadline;
+- narrow stops for repeated no-progress native tool loops;
 - one supervisor fate for both local processes.
 
 Z.AI documents the dedicated Coding endpoint as `https://api.z.ai/api/coding/paas/v4`, distinct from the General API. Its current tool guide explicitly lists Codex as supported. See [Other Tools](https://docs.z.ai/scenario-example/develop-tools/others) and [Tool Integration](https://docs.z.ai/devpack/tool/others).
@@ -76,13 +85,15 @@ Z.AI also limits Coding Plan quota to eligible tools/scenarios and warns that un
 ## Requirements
 
 - Codex desktop/CLI version with native multi-agent roles and `spawn_agent` support;
-- Bun 1.2+;
+- for the measured macOS build, a signed installed Codex/ChatGPT app whose bundled CLI reports exactly `0.155.0-alpha.16`; a CLI-only machine needs a working matching V8 source/archive path for the code-mode host;
+- Rust 1.95.0 and Git to build the pinned Codex source;
+- Bun 1.3.3+;
 - Python 3.11+;
 - LiteLLM CLI;
 - a Z.AI account with **GLM-5.3** access and current eligible Coding Plan/API usage;
 - macOS or Linux for automated service setup.
 
-The published validation used Codex CLI 0.147.0, Bun 1.3.3, and LiteLLM 1.96.2. See [Installation](docs/INSTALLATION.md) for the reproducible LiteLLM command and upgrade rule.
+The current macOS acceptance used the patched Codex CLI `0.155.0-alpha.16`, Bun 1.3.3, and LiteLLM 1.96.2. See [Validation](docs/VALIDATION.md) for exactly which layers were measured, and [Installation](docs/INSTALLATION.md) for prerequisite and build steps.
 
 This kit intentionally pins `glm-5.3`. It does not silently fall back to an older GLM model because the quality difference matters for large coding tasks.
 
@@ -96,18 +107,22 @@ Clone the repository, then test it in a temporary Codex home first:
 git clone https://github.com/suphotP/codex-native-glm-worker.git
 cd codex-native-glm-worker
 
-# Credential-free protocol tests on ports 47921/47925.
-bun run check:bridge
+# All credential-free protocol, installer, source-build and activation checks.
+bun run check
 
-# Plan only. This writes nothing.
+# Plans only; these do not mutate your Codex home.
 CODEX_HOME="$(mktemp -d)/.codex" ./scripts/install.sh
+./scripts/build-patched-codex.sh
 ```
 
-Install into your real Codex home only after reviewing the plan:
+Install the managed role/bridge files and build the patched backend after reviewing those plans:
 
 ```bash
 ./scripts/install.sh --apply
+./scripts/build-patched-codex.sh --apply
 ```
+
+Configure the Z.AI and local bridge credentials, start the bridge, then select the validated backend. On macOS, `./scripts/activate-backend.sh` prints the planned `CODEX_CLI_PATH` change; `--apply` selects it for the current GUI login session. Quit and reopen Codex, then run `scripts/doctor.sh` and the native acceptance flow below. Linux users can launch Codex with the printed `CODEX_CLI_PATH` environment value. [Installation](docs/INSTALLATION.md) covers the full order and safe rollback.
 
 The installer:
 
@@ -116,9 +131,14 @@ The installer:
 - installs an exact native role file;
 - appends one marked TOML block only after strict TOML validation;
 - installs the optional skill and filesystem assignment-envelope directory;
+- installs a checkpoint helper and tool-discipline instructions for retries and long tasks;
 - never asks for or writes your Z.AI key.
 
-It does not edit any root/default model selection or any unrelated agent/provider table.
+It does not edit any root/default model selection or any unrelated agent/provider table. The backend builder also leaves the signed Codex application bundle untouched.
+
+### Already running a native GLM setup?
+
+This installer does not adopt unmanaged `glm_worker` or `zai_glm_native` entries, and the builder will not overwrite an existing backend package. Keep a working setup running while you test this repository with a temporary `CODEX_HOME`. If you want a second source-backed package, use a fresh `--output-dir` and review its manifest before selecting it with `activate-backend.sh --package ABS --apply`. Reconcile existing role, bridge service and credential names separately; do not delete a working install until its replacement passes native acceptance.
 
 Read [Installation](docs/INSTALLATION.md) before configuring secrets or a background service.
 
@@ -132,14 +152,14 @@ Store the Z.AI key without putting it in shell history:
 /usr/bin/security add-generic-password -U -a "$USER" -s ai.z.native-glm.api-key -w
 ```
 
-Create a separate random local bridge token, then store it using the same prompt-only pattern:
+Create a separate random local bridge token **in your own terminal or password manager**, then store it using the same prompt-only pattern. Do not run the generation command through an assistant tool that records stdout:
 
 ```bash
 openssl rand -hex 32
 /usr/bin/security add-generic-password -U -a "$USER" -s ai.codex.native-glm.bridge-token -w
 ```
 
-Paste the generated token at the Keychain prompt. Do not pass a secret as a command-line argument.
+Paste the generated token at the Keychain prompt. Do not paste it into a Codex chat/tool output or pass it as a command-line argument.
 
 ### Linux
 
@@ -194,7 +214,8 @@ Acceptance requires:
 3. the child uses native shell tools for `pwd`, Git status, a focused test, and Docker client/server metadata;
 4. root metadata remains OpenAI while child role/model is GLM-5.3;
 5. no `codex exec` or external controller exists in the path;
-6. four distinct children can run concurrently when quota permits.
+
+A separate concurrency check can add four distinct children when quota and the current platform limit permit. The single native child is the minimum functional proof.
 
 See [Native acceptance](docs/NATIVE_ACCEPTANCE.md).
 
@@ -225,7 +246,8 @@ The root integrator must still read every diff/report, run decisive gates, and o
 ```text
 bridge/      loopback Responses facade + LiteLLM example config
 templates/   native agent role and Codex config snippet
-scripts/     install, uninstall, service, doctor, auth and fake tests
+patches/     pinned child-provider source patch for Codex 0.155.0-alpha.16
+scripts/     source build, activation, install, uninstall, service, doctor, auth and fake tests
 service/     launchd/systemd templates
 skill/       optional Codex workflow skill
 tests/       credential-free regressions and static checks

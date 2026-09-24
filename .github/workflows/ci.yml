@@ -19,8 +19,8 @@ jobs:
       - name: Shell syntax
         run: sh -n scripts/*.sh tests/*.sh
       - name: Credential-free bridge and static tests
-        run: bun run check:bridge && bun run check:static
+        run: bun run check:bridge && bun run check:checkpoint && bun run check:static
       - name: Temporary-home installer tests
-        run: bun run check:installer && bun run check:service
+        run: bun run check:installer && bun run check:service && bun run check:builder && bun run check:activation
       - name: Skill validation
         run: python3 scripts/validate-skill.py

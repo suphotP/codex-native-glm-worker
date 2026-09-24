@@ -1,17 +1,20 @@
 {
   "name": "codex-native-glm-worker",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "bun run check:bridge && bun run check:static && bun run check:installer && bun run check:service",
-    "check:bridge": "bun scripts/self-test.mjs",
+    "check": "bun run check:bridge && bun run check:checkpoint && bun run check:static && bun run check:installer && bun run check:service && bun run check:builder && bun run check:activation",
+    "check:bridge": "bun scripts/self-test.mjs && bun test tests/bridge-tool-loop-guard.test.mjs",
+    "check:checkpoint": "bun tests/checkpoint.test.mjs",
     "check:installer": "sh tests/install.test.sh",
     "check:service": "sh tests/service-template.test.sh",
     "check:static": "bun test tests/static.test.mjs",
+    "check:builder": "python3 -B tests/build-backend.test.py",
+    "check:activation": "sh tests/activate-backend.test.sh",
     "doctor": "sh scripts/doctor.sh"
   },
   "engines": {
-    "bun": ">=1.2.0"
+    "bun": ">=1.3.3"
   }
 }

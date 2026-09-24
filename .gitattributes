@@ -1,0 +1,2 @@
+# Keep upstream patch context byte-for-byte; source files still use normal whitespace checks.
+patches/*.patch whitespace=-blank-at-eol

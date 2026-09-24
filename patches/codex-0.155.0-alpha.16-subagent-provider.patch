@@ -1,0 +1,100 @@
+diff --git a/codex-rs/core/src/agent/role.rs b/codex-rs/core/src/agent/role.rs
+index f6633e7..94bf3b2 100644
+--- a/codex-rs/core/src/agent/role.rs
++++ b/codex-rs/core/src/agent/role.rs
+@@ -1,7 +1,8 @@
+ //! Applies bounded agent-role overrides to an existing session config.
+ //!
+ //! Roles may customize the child or reduce its capabilities, but never replace the parent
+-//! session's authority. A projected layer keeps existing layer-based consumers in sync.
++//! session's authority. The one explicitly pinned local worker provider below is the sole
++//! cross-provider exception. A projected layer keeps existing layer-based consumers in sync.
+ 
+ use crate::config::AgentRoleConfig;
+ use crate::config::Config;
+@@ -32,11 +33,13 @@ use toml::Value as TomlValue;
+ /// The role name used when a caller omits `agent_type`.
+ pub const DEFAULT_ROLE_NAME: &str = "default";
+ const AGENT_TYPE_UNAVAILABLE_ERROR: &str = "agent type is currently not available";
++const PINNED_SUBAGENT_MODEL_PROVIDER_ID: &str = "zai_glm_native";
+ 
+ #[derive(Default, Serialize)]
+ struct AgentRoleOverrides {
+     developer_instructions: Option<String>,
+     model: Option<String>,
++    model_provider: Option<String>,
+     model_reasoning_effort: Option<ReasoningEffort>,
+     model_reasoning_summary: Option<ReasoningSummary>,
+     model_verbosity: Option<Verbosity>,
+@@ -80,6 +83,9 @@ async fn apply_role_to_config_inner(
+     let mut overrides = AgentRoleOverrides {
+         developer_instructions: role_config.developer_instructions,
+         model: role_config.model,
++        model_provider: role_config
++            .model_provider
++            .filter(|provider_id| provider_id == PINNED_SUBAGENT_MODEL_PROVIDER_ID),
+         model_reasoning_effort: role_config.model_reasoning_effort,
+         model_reasoning_summary: role_config.model_reasoning_summary,
+         model_verbosity: role_config.model_verbosity,
+@@ -184,6 +190,14 @@ mod role_overrides {
+         if let Some(model) = &overrides.model {
+             next_config.model = Some(model.clone());
+         }
++        if let Some(model_provider_id) = &overrides.model_provider {
++            next_config.model_provider = next_config
++                .model_providers
++                .get(model_provider_id)
++                .cloned()
++                .ok_or_else(|| anyhow!("Model provider `{model_provider_id}` not found"))?;
++            next_config.model_provider_id = model_provider_id.clone();
++        }
+         if let Some(instructions) = &overrides.developer_instructions {
+             next_config.developer_instructions = Some(instructions.clone());
+         }
+diff --git a/codex-rs/core/src/agent/role_tests.rs b/codex-rs/core/src/agent/role_tests.rs
+index fad4e30..0ab2e6d 100644
+--- a/codex-rs/core/src/agent/role_tests.rs
++++ b/codex-rs/core/src/agent/role_tests.rs
+@@ -520,6 +520,42 @@ command = "attacker-command"
+     }
+ }
+ 
++#[tokio::test]
++async fn apply_role_allows_only_the_pinned_glm_worker_provider() {
++    let (home, mut config) = test_config_with_cli_overrides(Vec::new()).await;
++    let mut pinned_provider = config.model_provider.clone();
++    pinned_provider.name = "Pinned GLM worker provider".to_string();
++    config.model_providers.insert(
++        PINNED_SUBAGENT_MODEL_PROVIDER_ID.to_string(),
++        pinned_provider.clone(),
++    );
++    let role_path = write_role_config(
++        &home,
++        "glm-worker.toml",
++        r#"developer_instructions = "Stay focused"
++model = "glm-5.3"
++model_provider = "zai_glm_native"
++"#,
++    )
++    .await;
++    config.agent_roles.insert(
++        "glm_worker".to_string(),
++        AgentRoleConfig {
++            description: None,
++            config_file: Some(role_path),
++            nickname_candidates: None,
++        },
++    );
++
++    apply_role_to_config(&mut config, Some("glm_worker"))
++        .await
++        .expect("pinned GLM role should apply");
++
++    assert_eq!(config.model.as_deref(), Some("glm-5.3"));
++    assert_eq!(config.model_provider_id, PINNED_SUBAGENT_MODEL_PROVIDER_ID);
++    assert_eq!(config.model_provider, pinned_provider);
++}
++
+ #[tokio::test]
+ async fn apply_role_disables_plugins_unless_required_by_managed_policy() {
+     let home = TempDir::new().expect("create temp dir");

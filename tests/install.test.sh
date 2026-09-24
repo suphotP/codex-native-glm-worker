@@ -20,6 +20,11 @@ grep -q '^model_reasoning_effort = "max"$' "$codex_home/agents/glm_worker.toml"
 [ "$(file_mode "$codex_home/config.toml")" = "600" ]
 [ "$(file_mode "$codex_home/agents/glm_worker.toml")" = "600" ]
 [ "$(file_mode "$codex_home/native-glm-worker/bin/run")" = "700" ]
+[ "$(file_mode "$codex_home/native-glm-worker/bin/activate-backend")" = "700" ]
+[ "$(file_mode "$codex_home/native-glm-worker/bin/checkpoint.mjs")" = "600" ]
+[ "$(file_mode "$codex_home/native-glm-worker/bin/TOOL_DISCIPLINE.md")" = "600" ]
+[ "$(file_mode "$codex_home/native-glm-worker/bridge/tool-loop-guard.mjs")" = "600" ]
+grep -q 'bin/checkpoint.mjs' "$codex_home/agents/glm_worker.toml"
 
 # Reinstall is idempotent and does not duplicate the managed block.
 CODEX_HOME="$codex_home" "$repository_root/scripts/install.sh" --apply >/dev/null
@@ -75,5 +80,9 @@ grep -q '^\[unrelated\]$' "$codex_home/config.toml"
 ! grep -q '^\[agents.glm_worker\]$' "$codex_home/config.toml"
 [ ! -e "$codex_home/agents/glm_worker.toml" ]
 [ ! -e "$codex_home/skills/codex-native-glm-worker" ]
+[ ! -e "$codex_home/native-glm-worker/bin/checkpoint.mjs" ]
+[ ! -e "$codex_home/native-glm-worker/bin/TOOL_DISCIPLINE.md" ]
+[ ! -e "$codex_home/native-glm-worker/bin/activate-backend" ]
+[ ! -e "$codex_home/native-glm-worker/bridge/tool-loop-guard.mjs" ]
 
 echo "TEMP_INSTALL_TEST_PASS"

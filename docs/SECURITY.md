@@ -14,6 +14,13 @@
 - Require bearer auth for Responses requests.
 - Do not expose the port through LAN, tunnel, reverse proxy, container publish, or SaaS.
 - The bridge is for the account holder's local coding tool, not a shared inference service.
+- A provider 429 body that is too large or stalls is replaced with a fixed local `UPSTREAM_429_UNINSPECTABLE`; the bridge neither retries that unknown error nor logs the provider body. This stop is not a proof that the user's quota has reset.
+
+## Patched backend provenance
+
+- The builder pins the official upstream commit and a two-file child-provider patch, then packages full patched source, binaries, a manifest and hashes. The activation plan checks file consistency without executing a package binary.
+- `manifest.json` and `SHA256SUMS` are self-declared local receipts, not a publisher signature or cryptographic proof that a binary was compiled from the included source. Build the package from this reviewed repository and still perform a real native OpenAI-parent/GLM-child acceptance test after activation.
+- Never accept a same-version `codex --version` string by itself as proof of the GLM provider patch. Doctor checks the running app-server and source-backed package consistency; native acceptance verifies actual child selection and tool/result completion.
 
 ## Worker authority
 

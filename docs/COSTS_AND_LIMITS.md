@@ -4,7 +4,7 @@
 
 Use premium Codex capacity for work where it is most valuable: decomposition, product judgment, UI, integration, security review, live proof, and final acceptance. Send large non-UI packets to GLM-5.3 workers.
 
-One operator's real workload previously exhausted practical weekly allowance across three $200/month Codex accounts. After adopting native GLM-5.3 workers, one $200/month Codex account plus GLM capacity has been comfortable. This is anecdotal and not a promise.
+In one operator's earlier workload, routing bounded implementation to native GLM workers reduced pressure on premium Codex capacity. This is an anecdote, not a savings estimate. Compare current plan prices, quotas, quality, and retry behavior for your own workload before spending money.
 
 ## What changes the economics
 
@@ -19,6 +19,7 @@ One operator's real workload previously exhausted practical weekly allowance acr
 ## Cost controls
 
 - default protocol retries to zero;
+- classify usage-window 1308, terminal Fair Usage 1313, and ordinary high demand before attempting another paid call;
 - use two staggered large workers during high demand instead of four simultaneous workers;
 - write assignment envelopes with exact ownership and acceptance;
 - checkpoint long reports incrementally;
